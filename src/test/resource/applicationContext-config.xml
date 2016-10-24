@@ -34,15 +34,10 @@
 		<!-- 线程池所使用的缓冲队列 -->
 		<property name="queueCapacity" value="48" />
 	</bean>
-	
-<!-- 	<bean id="mbServer" class="org.springframework.jmx.export.MBeanExporter">  
-        <property name="beans">  
-            <map>  
-                <entry key="comdaydays:memberDeviceCache=MemberDeviceCache" value-ref="myCache"/>  
-            </map>  
-        </property>  
-    </bean>
-	 -->
-	<import resource="classpath:applicationContext-dao.xml"/>
-	
+
+	<!-- <bean id="mbServer" class="org.springframework.jmx.export.MBeanExporter"> 
+		<property name="beans"> <map> <entry key="comdaydays:memberDeviceCache=MemberDeviceCache" 
+		value-ref="myCache"/> </map> </property> </bean> -->
+	<import resource="classpath:applicationContext-dao.xml" />
+
 </beans>

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,8 @@ import com.daydays.domain.UrlNum;
 
 @Component
 public class LogDaoImpl {
+
+	private static final Logger logger = Logger.getLogger(LogDaoImpl.class);
 
 	@Resource
 	private JdbcTemplate jdbcTemplate;
@@ -30,25 +33,18 @@ public class LogDaoImpl {
 			+ "	create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',\n" + "	PRIMARY KEY (`id`)\n"
 			+ ") ENGINE = INNODB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8 COMMENT = 'http日志表';";
 
-	private String reqNumQuerySql = "SELECT\n" + "	url,\n" + "	COUNT(1) num\n" + "FROM\n"
-			+ "	$tablename\n" + "WHERE\n" + "	1 = 1\n" + "$conditions" + "GROUP BY\n" + "	url;";
+	private String reqNumQuerySql = "SELECT\n" + "	url,\n" + "	COUNT(1) num\n" + "FROM\n" + "	$tablename\n"
+			+ "WHERE\n" + "	1 = 1\n" + "$conditions" + "GROUP BY\n" + "	url;";
 
-	private String dropTableSql = "DROP TABLE $tablename;";
-
-	private String LOG_TABLE_NAME = "http_log";
-
-	public void createLogtable(String projectName) {
-		// String tempDropSql = dropTableSql.replace("$tablename",
-		// getTableName(projectName));
-		// this.jdbcTemplate.execute(tempDropSql);
-
-		String tempCreateSql = createTableSql.replace("$tablename", projectName);
-		this.jdbcTemplate.execute(tempCreateSql);
+	public void createLogtable(String tableName) {
+		try {
+			String tempCreateSql = createTableSql.replace("$tablename", tableName);
+			this.jdbcTemplate.execute(tempCreateSql);
+		} catch (Exception e) {
+			logger.warn("创建表失败，table.name=" + tableName);
+			throw e;
+		}
 	}
-
-//	private String getTableName(String projectName) {
-//		return LOG_TABLE_NAME + "_" + projectName + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date());
-//	}
 
 	public int addLogItems(List<LogItem> logItems, String projectName) {
 		if (CollectionUtils.isEmpty(logItems)) {
@@ -68,11 +64,10 @@ public class LogDaoImpl {
 		return result;
 	}
 
-
-	public List<UrlNum> queryUrlRequestNum(Integer logLevel,String projectName) {
+	public List<UrlNum> queryUrlRequestNum(Integer logLevel, String projectName) {
 		String tempUrl = reqNumQuerySql.replace("$tablename", projectName);
 		if (logLevel != null) {
-			tempUrl = tempUrl.replace("$conditions", "AND log_level =" + logLevel+"\n");
+			tempUrl = tempUrl.replace("$conditions", "AND log_level =" + logLevel + "\n");
 		} else {
 			tempUrl = tempUrl.replace("$conditions", "");
 		}
@@ -87,6 +82,5 @@ public class LogDaoImpl {
 			}
 		});
 	}
-	
-	
+
 }

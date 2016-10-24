@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.daydays.dao.LogDaoImpl;
+import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
 
 @Service
@@ -20,9 +21,15 @@ public class StartJob {
 	@Autowired
 	private LogDaoImpl logDao;
 	@Autowired
+	private OriginalLogDaoImpl originalLogDao;
+	@Autowired
 	private LogStatisticsService logStatisticService;
-	private String dateStr = "2016-10-23";
-	private String logFilePath = "/Users/bql/http/"+dateStr+'/';
+
+	private final String LOG_TABLE_PRE = "http_log_";
+	private String dateStr = "2016-10-32";
+//	private String logFilePath = "/Users/bql/http/" + dateStr + '/';
+	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
+	
 
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
@@ -38,6 +45,7 @@ public class StartJob {
 		String tableName = getTableName(fileFullName1);
 		// 创建日志表
 		logDao.createLogtable(tableName);
+		originalLogDao.createLogtable(getOrignalLogTableName(fileFullName1));
 		// 处理文件1
 		dealLogFile(fileFullName1, tableName);
 
@@ -49,18 +57,19 @@ public class StartJob {
 		String tableName = getTableName(fileFullName1);
 		// 创建日志表
 		logDao.createLogtable(tableName);
+		originalLogDao.createLogtable(getOrignalLogTableName(fileFullName1));
 		// 处理文件1
 		dealLogFile(fileFullName1, tableName);
 
-		String fileFullName2 = logFilePath + "cm_client_http-monitor_37.log";
 		// 处理文件2
+		String fileFullName2 = logFilePath + "cm_client_http-monitor_37.log";
 		dealLogFile(fileFullName2, tableName);
 
+		// 处理文件3
 		String fileFullName3 = logFilePath + "cm_client_http-monitor_129.log";
-		// 处理文件2
 		dealLogFile(fileFullName3, tableName);
+		// 处理文件4
 		String fileFullName4 = logFilePath + "cm_client_http-monitor_130.log";
-		// 处理文件2
 		dealLogFile(fileFullName4, tableName);
 
 		logStatisticService.reportFile(tableName, "cm-client", dateStr);
@@ -71,6 +80,7 @@ public class StartJob {
 		String tableName = getTableName(fileFullName1);
 		// 创建日志表
 		logDao.createLogtable(tableName);
+		originalLogDao.createLogtable(getOrignalLogTableName(fileFullName1));
 		// 处理文件1
 		dealLogFile(fileFullName1, tableName);
 
@@ -86,6 +96,7 @@ public class StartJob {
 		String tableName = getTableName(fileFullName1);
 		// 创建日志表
 		logDao.createLogtable(tableName);
+		originalLogDao.createLogtable(getOrignalLogTableName(fileFullName1));
 		// 处理文件1
 		dealLogFile(fileFullName1, tableName);
 
@@ -108,7 +119,7 @@ public class StartJob {
 
 	private List<List<LogItem>> getLogItems(String fileFullName) {
 		List<List<LogItem>> result = new ArrayList<>();
-		List<LogItem> logItems = fileParse.parseFile(fileFullName);
+		List<LogItem> logItems = fileParse.parseFile(fileFullName, getOrignalLogTableName(fileFullName));
 		if (CollectionUtils.isEmpty(logItems)) {
 			logger.warn("has.no.info.fileName=" + fileFullName);
 			return null;
@@ -120,12 +131,14 @@ public class StartJob {
 		return result;
 	}
 
+	private String getOrignalLogTableName(String fileFullName) {
+		return getTableName(fileFullName) + "_org";
+	}
+
 	private String getTableName(String fileFullName) {
 		String fileName = getFileName(fileFullName);
 		String projectName = getProjectName(fileName);
-//		String dateStr = getDateStr(fileName);
-		String tableName = "http_log_" + projectName + dateStr.replace('-', '_');
-		return tableName;
+		return LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
 	}
 
 	private String getFileName(String fileFullName) {
@@ -136,11 +149,6 @@ public class StartJob {
 	private String getProjectName(String fileName) {
 		int projectNameIndex = fileName.lastIndexOf("_http-monitor");
 		return fileName.substring(0, projectNameIndex);
-	}
-
-	private String getDateStr(String fileName) {
-		int dateIndex = fileName.lastIndexOf(".");
-		return fileName.substring(dateIndex + 1);
 	}
 
 	private void add2DB(List<LogItem> logItems, String projectName) {

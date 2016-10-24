@@ -17,8 +17,8 @@
 		</layout>
 	</appender>
 
-	
-	<logger name="com.daydays" >
+
+	<logger name="com.daydays">
 		<level value="DEBUG" />
 		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>

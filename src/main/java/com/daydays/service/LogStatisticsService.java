@@ -40,42 +40,50 @@ public class LogStatisticsService {
 
 	public void reportFile(String tableName, String projectName, String statisticDate) throws IOException {
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
-		String statisticFileName = logFilePath + /*tableName*/ statisticDate+ ".xlsx";
-//		FileUtils.createFile(statisticFileName);
-//		FileUtils.appendToFile(
-//				"url" + "\t" + "total" + "\t" + "warnNum" + "\t" + "errorNum" + "\t" + "WarnErrorRatio" + "\n",
-//				statisticFileName);
+		String statisticFileName = logFilePath + /* tableName */ statisticDate + ".xlsx";
+		// FileUtils.createFile(statisticFileName);
+		// FileUtils.appendToFile(
+		// "url" + "\t" + "total" + "\t" + "warnNum" + "\t" + "errorNum" + "\t"
+		// + "WarnErrorRatio" + "\n",
+		// statisticFileName);
 
-//		for (UrlRequestInfo urlRequestInfo : logInfos) {
-//			// if (urlRequestInfo.getErrorNum() + urlRequestInfo.getWarnNum() <=
-//			// 0) {
-//			// continue;
-//			// }
-//			String urlInfo = urlRequestInfo.getUrl() + "\t" + urlRequestInfo.getTotal() + "\t"
-//					+ urlRequestInfo.getWarnNum() + "\t" + urlRequestInfo.getErrorNum() + "\t"
-//					+ urlRequestInfo.getWarnRatio() + "\n";
-//			logger.info(urlInfo);
-//			FileUtils.appendToFile(urlInfo, statisticFileName);
-//			
-//		}
+		// for (UrlRequestInfo urlRequestInfo : logInfos) {
+		// // if (urlRequestInfo.getErrorNum() + urlRequestInfo.getWarnNum() <=
+		// // 0) {
+		// // continue;
+		// // }
+		// String urlInfo = urlRequestInfo.getUrl() + "\t" +
+		// urlRequestInfo.getTotal() + "\t"
+		// + urlRequestInfo.getWarnNum() + "\t" + urlRequestInfo.getErrorNum() +
+		// "\t"
+		// + urlRequestInfo.getWarnRatio() + "\n";
+		// logger.info(urlInfo);
+		// FileUtils.appendToFile(urlInfo, statisticFileName);
+		//
+		// }
 		XSSFWorkbook workBook = getWorkBook(statisticFileName);
-		XSSFSheet sheet =  workBook.createSheet(projectName);
+		XSSFSheet sheet = workBook.createSheet(projectName);
 		addExcelHeader(sheet);
 		add2Excel(logInfos, sheet);
 		writeFile2Disk(workBook, statisticFileName);
 	}
-	
-	
-	private void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException{
+
+	private void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException {
 		FileOutputStream fos = new FileOutputStream(statisticFileName);
 		workBook.write(fos);
 		fos.flush();
 		fos.close();
 	}
-	
-	public File getExcelFile(String statisticFileName) throws IOException{
+
+	public File getExcelFile(String statisticFileName) throws IOException {
 		File file = new File(statisticFileName);
-		if(!new File(statisticFileName).exists()){
+		if (!new File(statisticFileName).exists()) {
+			// 需要先创建目录
+			File dir = new File(statisticFileName.substring(0, statisticFileName.lastIndexOf("/")));
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+
 			FileUtils.createFile(statisticFileName);
 			XSSFWorkbook workBook = new XSSFWorkbook();
 			FileOutputStream fos = new FileOutputStream(file);
@@ -92,11 +100,11 @@ public class LogStatisticsService {
 		XSSFWorkbook workBook = new XSSFWorkbook(fis);
 		return workBook;
 	}
-	
-	public XSSFSheet getXssfSheet(String statisticFileName, String projectName) throws IOException{
+
+	public XSSFSheet getXssfSheet(String statisticFileName, String projectName) throws IOException {
 		XSSFWorkbook workBook = getWorkBook(statisticFileName);
 		return workBook.createSheet(projectName);
-		
+
 	}
 
 	public int add2Excel(List<UrlRequestInfo> urlInfos, XSSFSheet xssSheet) {
@@ -112,8 +120,8 @@ public class LogStatisticsService {
 		}
 		return i;
 	}
-	
-	private void addExcelHeader(XSSFSheet xssSheet){
+
+	private void addExcelHeader(XSSFSheet xssSheet) {
 		XSSFRow row = xssSheet.createRow(0);
 		int cellIndex = 0;
 		row.createCell(cellIndex++).setCellValue("URL");

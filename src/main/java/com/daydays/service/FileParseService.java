@@ -2,14 +2,18 @@ package com.daydays.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
 import com.daydays.utils.FileUtils;
+import com.daydays.utils.IExecutable;
 
 @Service
 public class FileParseService {
@@ -28,56 +32,60 @@ public class FileParseService {
 	private String WARN = "[ WARN]";
 	private String ERROR = "[ERROR]";
 
-//	/passcode/noExistLoginNamePassCode; .html 请求未统计
-	
+	// /passcode/noExistLoginNamePassCode; .html 请求未统计
+
+	@Autowired
+	private OriginalLogDaoImpl originalLogDao;
+
 	private static final Logger logger = Logger.getLogger(FileParseService.class);
 
-	public List<LogItem> parseFile(String fileName) {
+	public List<LogItem> parseFile(String fileName, final String orgLogTableName) throws IOException {
 
-		try {
-			
-//			String tempFile;
-			
-//			FileUtils.readLineFromFile(fileName, new IExecutable() {
-//				
-//				@Override
-//				public <String> void execute(Collection<String> collectoins) {
-//					
-//				}
-//			});
-			
-			List<String> fileLines = FileUtils.readLineFromFile(fileName);
-			if (CollectionUtils.isEmpty(fileLines)) {
-				return null;
+		FileUtils.readLineFromFile(fileName, new IExecutable() {
+			@Override
+			public <String> void execute(Collection<String> orgLogs) {
+				originalLogDao.addOriginalLog((Collection<java.lang.String>) orgLogs, orgLogTableName);
 			}
-			logger.info("fileName=" + fileName + ", line.number=" + fileLines.size());
-			List<LogItem> logItems = new ArrayList<>();
-			for (String fileLine : fileLines) {
-				if (!fileLine.contains(URL_END_FLAG)) {
-					logger.info("unDeal.line=" + fileLine);
-					continue;
-				}
-				try {
-					LogItem logItem = new LogItem();
-					logItem.setLogLevel(getLogLevel(fileLine));
-					if (logItem.getLogLevel() > 1) {
-						logItem.setUrl(getUrl(fileLine, WARN_URL_FLAG));
-					} else {
-						logItem.setUrl(getUrl(fileLine, URL_FLAG));
-					}
-					logItem.setCostTime(getCostTime(fileLine));
-					logItem.setLogTime(getlogTime(fileLine));
-					logItems.add(logItem);
-				} catch (Throwable t) {
-					logger.error("parse.error:" + fileLine);
-					continue;
-				}
-			}
-			return logItems;
+		});
 
-		} catch (IOException e) {
-			return null;
+		int logNum = originalLogDao.queryOriginalLogSize(orgLogTableName);
+		logger.info("fileName=" + fileName + ",logNum=" + logNum);
+		List<LogItem> logItems = new ArrayList<>();
+		int pageSize = 999;
+		for (int startIndex = 0; startIndex < logNum;startIndex += pageSize) {
+			List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
+			if (CollectionUtils.isEmpty(orgLogs)) {
+				break;
+			}
+			logItems.addAll(getLogItems(orgLogs));
 		}
+		return logItems;
+	}
+
+	private List<LogItem> getLogItems(List<String> fileLines) {
+		List<LogItem> logItems = new ArrayList<>();
+		for (String fileLine : fileLines) {
+			if (!fileLine.contains(URL_END_FLAG)) {
+				logger.info("unDeal.line=" + fileLine);
+				continue;
+			}
+			try {
+				LogItem logItem = new LogItem();
+				logItem.setLogLevel(getLogLevel(fileLine));
+				if (logItem.getLogLevel() > 1) {
+					logItem.setUrl(getUrl(fileLine, WARN_URL_FLAG));
+				} else {
+					logItem.setUrl(getUrl(fileLine, URL_FLAG));
+				}
+				logItem.setCostTime(getCostTime(fileLine));
+				logItem.setLogTime(getlogTime(fileLine));
+				logItems.add(logItem);
+			} catch (Throwable t) {
+				logger.error("parse.error:" + fileLine);
+				continue;
+			}
+		}
+		return logItems;
 	}
 
 	private int getLogLevel(String fileLine) {
