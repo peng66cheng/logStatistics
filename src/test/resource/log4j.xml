@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%5p] [%d{yyyy-MM-dd HH:mm:ss SSS}] [%t] (%F:%L) %m%n" />
+		</layout>
+	</appender>
+	<appender name="DEFAULT-APPENDER" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="Encoding" value="UTF-8" />
+		<param name="File" value="/data/logs/http-monitor/common-default.log" /> <!-- 日志路径，根据实际情况修改 -->
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="[%5p] [%d{yyyy-MM-dd HH:mm:ss SSS}] [%t] (%F:%L) %m%n" />
+		</layout>
+	</appender>
+
+	
+	<logger name="com.daydays" >
+		<level value="DEBUG" />
+		<appender-ref ref="DEFAULT-APPENDER" />
+	</logger>
+
+	<!-- TRACE < DEBUG < INFO < WARN < ERROR < FATAL -->
+	<root>
+		<level value="debug" />       <!-- print warn、error -->
+		<appender-ref ref="DEFAULT-APPENDER" />
+		<priority value="INFO" />      <!-- 根据实际情况修改日志级别，一般线上是INFO以上 -->
+		<appender-ref ref="CONSOLE" /> <!-- 该appender需要在上线时删除，以免输出重复的日志到catalina.out文件 -->
+	</root>
+</log4j:configuration>
