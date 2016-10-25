@@ -24,7 +24,7 @@ public class LogDaoImpl {
 	@Resource
 	private JdbcTemplate jdbcTemplate;
 
-	private String createTableSql = "CREATE TABLE $tablename (\n"
+	private String createTableSql = "CREATE TABLE if not exists $tablename (\n"
 			+ "	id BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT '主键',\n"
 			+ "	url VARCHAR (255) DEFAULT NULL COMMENT '请求Url',\n"
 			+ "	cost INT (11) DEFAULT NULL COMMENT '请求处理时间，单位为ms',\n"

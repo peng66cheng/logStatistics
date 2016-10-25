@@ -393,4 +393,11 @@ public final class FileUtils {
 		}
 		return true;
 	}
+
+	public static String[] listSubFile(String dir) {
+		if (checkDir(dir, false)) {
+			return new File(dir).list();
+		}
+		return null;
+	}
 }

@@ -12,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import com.daydays.dao.LogDaoImpl;
 import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
+import com.daydays.utils.FileUtils;
 
 @Service
 public class StartJob {
@@ -34,10 +35,21 @@ public class StartJob {
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
 	public void start() throws IOException {
-		teacherClientStatistics();
-		userClientStatistics();
-		cmClientStatistics();
-		operatorClientStatistics();
+		String[] logFileNames = FileUtils.listSubFile(logFilePath);
+		for (String logFileName : logFileNames) {
+			String tableName = getTableName(logFileName);
+			// 创建日志表
+			logDao.createLogtable(tableName);
+			originalLogDao.createLogtable(getOrignalLogTableName(logFileName));
+			// 处理文件1
+			dealLogFile(logFileName, tableName);
+			logStatisticService.reportFile(tableName, "operator-client", dateStr);
+		}
+		
+//		teacherClientStatistics();
+//		userClientStatistics();
+//		cmClientStatistics();
+//		operatorClientStatistics();
 	}
 
 	private void operatorClientStatistics() throws IOException {
