@@ -3,9 +3,12 @@ package com.daydays.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -36,18 +39,31 @@ public class StartJob {
 
 	public void start() throws IOException {
 		File[] logFileNames = FileUtils.listSubFile(logFilePath);
+		Set<String> logTableSet = new HashSet<>();
 		for (File logFile : logFileNames) {
 			String fileName = logFile.getName();
 			String projectName = getProjectName(fileName);
 			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
+			logTableSet.add(tableName);
+			
 			String orgTableName = tableName + "_org";
 			// 创建日志表
 			logDao.createLogtable(tableName);
 			originalLogDao.createLogtable(orgTableName);
 			// 处理文件1
 			dealLogFile(logFilePath + fileName, tableName, orgTableName);
-			logStatisticService.reportFile(logFilePath + "httpStatistics/", tableName, getProjectName(fileName),
-					dateStr);
+		}
+		report(logTableSet);
+	}
+
+	private void report(Set<String> logTableSet) throws IOException {
+		for (String logTableName : logTableSet) {
+			String projectName = logTableName.substring(LOG_TABLE_PRE.length(), logTableName.indexOf("20"));
+			String statisticFileName = logFilePath + "httpStatistics/" + dateStr + ".xlsx";
+			XSSFWorkbook workBook = logStatisticService.getWorkBook(statisticFileName);
+			
+			logStatisticService.addData2Excel(workBook, logTableName, projectName);
+			logStatisticService.writeFile2Disk(workBook, statisticFileName);
 		}
 	}
 

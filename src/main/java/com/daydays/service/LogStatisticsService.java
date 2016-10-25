@@ -37,17 +37,14 @@ public class LogStatisticsService {
 	//
 
 
-	public void reportFile(String reportFilePath ,String tableName, String projectName, String statisticDate) throws IOException {
-		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
-		String statisticFileName = reportFilePath + statisticDate + ".xlsx";
-		XSSFWorkbook workBook = getWorkBook(statisticFileName);
+	public void addData2Excel(XSSFWorkbook workBook, String tableName, String projectName) throws IOException {
 		XSSFSheet sheet = workBook.createSheet(projectName);
 		addExcelHeader(sheet);
+		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
 		add2Excel(logInfos, sheet);
-		writeFile2Disk(workBook, statisticFileName);
 	}
 
-	private void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException {
+	public void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException {
 		FileOutputStream fos = new FileOutputStream(statisticFileName);
 		workBook.write(fos);
 		fos.flush();
