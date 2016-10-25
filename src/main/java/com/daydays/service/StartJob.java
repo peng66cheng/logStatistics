@@ -107,7 +107,7 @@ public class StartJob {
 		logStatisticService.reportFile(tableName, "teacher-client", dateStr);
 	}
 
-	private void dealLogFile(String fileFullName, String tableName) {
+	private void dealLogFile(String fileFullName, String tableName) throws IOException {
 		List<List<LogItem>> result = getLogItems(fileFullName);
 		if (CollectionUtils.isEmpty(result)) {
 			return;
@@ -117,7 +117,7 @@ public class StartJob {
 		}
 	}
 
-	private List<List<LogItem>> getLogItems(String fileFullName) {
+	private List<List<LogItem>> getLogItems(String fileFullName) throws IOException {
 		List<List<LogItem>> result = new ArrayList<>();
 		List<LogItem> logItems = fileParse.parseFile(fileFullName, getOrignalLogTableName(fileFullName));
 		if (CollectionUtils.isEmpty(logItems)) {
