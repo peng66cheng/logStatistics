@@ -394,9 +394,9 @@ public final class FileUtils {
 		return true;
 	}
 
-	public static String[] listSubFile(String dir) {
+	public static File[] listSubFile(String dir) {
 		if (checkDir(dir, false)) {
-			return new File(dir).list();
+			return new File(dir).listFiles();
 		}
 		return null;
 	}

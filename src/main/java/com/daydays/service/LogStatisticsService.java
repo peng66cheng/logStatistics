@@ -36,31 +36,10 @@ public class LogStatisticsService {
 	// }
 	//
 
-	private String logFilePath = "/Users/bql/http/httpStatistics/";
 
-	public void reportFile(String tableName, String projectName, String statisticDate) throws IOException {
+	public void reportFile(String reportFilePath ,String tableName, String projectName, String statisticDate) throws IOException {
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
-		String statisticFileName = logFilePath + /* tableName */ statisticDate + ".xlsx";
-		// FileUtils.createFile(statisticFileName);
-		// FileUtils.appendToFile(
-		// "url" + "\t" + "total" + "\t" + "warnNum" + "\t" + "errorNum" + "\t"
-		// + "WarnErrorRatio" + "\n",
-		// statisticFileName);
-
-		// for (UrlRequestInfo urlRequestInfo : logInfos) {
-		// // if (urlRequestInfo.getErrorNum() + urlRequestInfo.getWarnNum() <=
-		// // 0) {
-		// // continue;
-		// // }
-		// String urlInfo = urlRequestInfo.getUrl() + "\t" +
-		// urlRequestInfo.getTotal() + "\t"
-		// + urlRequestInfo.getWarnNum() + "\t" + urlRequestInfo.getErrorNum() +
-		// "\t"
-		// + urlRequestInfo.getWarnRatio() + "\n";
-		// logger.info(urlInfo);
-		// FileUtils.appendToFile(urlInfo, statisticFileName);
-		//
-		// }
+		String statisticFileName = reportFilePath + statisticDate + ".xlsx";
 		XSSFWorkbook workBook = getWorkBook(statisticFileName);
 		XSSFSheet sheet = workBook.createSheet(projectName);
 		addExcelHeader(sheet);
@@ -79,11 +58,7 @@ public class LogStatisticsService {
 		File file = new File(statisticFileName);
 		if (!new File(statisticFileName).exists()) {
 			// 需要先创建目录
-			File dir = new File(statisticFileName.substring(0, statisticFileName.lastIndexOf("/")));
-			if (!dir.exists()) {
-				dir.mkdirs();
-			}
-
+			FileUtils.checkDir(statisticFileName.substring(0, statisticFileName.lastIndexOf("/")), true);
 			FileUtils.createFile(statisticFileName);
 			XSSFWorkbook workBook = new XSSFWorkbook();
 			FileOutputStream fos = new FileOutputStream(file);
