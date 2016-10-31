@@ -31,9 +31,9 @@ public class StartJob {
 	private LogStatisticsService logStatisticService;
 
 	private final String LOG_TABLE_PRE = "http_log_";
-	private String dateStr = "2016-10-32";
-	// private String logFilePath = "/Users/bql/http/" + dateStr + '/';
-	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
+	private String dateStr = "2016-10-28";
+	 private String logFilePath = "/Users/bql/http/" + dateStr + '/';
+//	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
@@ -41,6 +41,9 @@ public class StartJob {
 		File[] logFileNames = FileUtils.listSubFile(logFilePath);
 		Set<String> logTableSet = new HashSet<>();
 		for (File logFile : logFileNames) {
+			if(!logFile.getName().endsWith(".log")){
+				continue;
+			}
 			String fileName = logFile.getName();
 			String projectName = getProjectName(fileName);
 			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
@@ -53,6 +56,7 @@ public class StartJob {
 			// 处理文件1
 			dealLogFile(logFilePath + fileName, tableName, orgTableName);
 		}
+//		logTableSet.add("http_log_cm_client2016_10_28");
 		report(logTableSet);
 	}
 
