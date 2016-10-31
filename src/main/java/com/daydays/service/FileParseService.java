@@ -65,7 +65,7 @@ public class FileParseService {
 	private List<LogItem> getLogItems(List<String> fileLines) {
 		List<LogItem> logItems = new ArrayList<>();
 		for (String fileLine : fileLines) {
-			if (!fileLine.contains(URL_END_FLAG)) {
+			if (!fileLine.contains(URL_FLAG) && !fileLine.contains(WARN_URL_FLAG)) {
 				logger.info("unDeal.line=" + fileLine);
 				continue;
 			}
@@ -103,12 +103,13 @@ public class FileParseService {
 
 	private String getUrl(String fileLine, String urlStartFlag) {
 		int urlBeginIndex = fileLine.indexOf(urlStartFlag);
-		int urlEndIndex = fileLine.indexOf(URL_END_FLAG);
+		int urlEndIndex = fileLine.indexOf( ']', urlBeginIndex);
 		if (urlBeginIndex < 0 || urlEndIndex < 0) {
 			// fileLine
 			return null;
 		}
-		return fileLine.substring(urlBeginIndex + urlStartFlag.length(), urlEndIndex + URL_END_FLAG.length());
+		String url = fileLine.substring(urlBeginIndex + urlStartFlag.length(), urlEndIndex + URL_END_FLAG.length());
+		return url.replaceAll("//", "/");
 	}
 
 	private int getCostTime(String fileLine) {
