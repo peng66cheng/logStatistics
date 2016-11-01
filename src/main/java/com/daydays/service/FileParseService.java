@@ -20,7 +20,7 @@ public class FileParseService {
 
 	private String URL_FLAG = "url=[";
 	private String WARN_URL_FLAG = "invoke [";
-	private String URL_END_FLAG = ".do";
+	private String URL_END_FLAG = "]";
 
 	private String TIME_FLAG = "time=[";
 	private String TIME_END_FLAG = "ms]";
@@ -103,12 +103,12 @@ public class FileParseService {
 
 	private String getUrl(String fileLine, String urlStartFlag) {
 		int urlBeginIndex = fileLine.indexOf(urlStartFlag);
-		int urlEndIndex = fileLine.indexOf( ']', urlBeginIndex);
+		int urlEndIndex = fileLine.indexOf(URL_END_FLAG, urlBeginIndex);
 		if (urlBeginIndex < 0 || urlEndIndex < 0) {
 			// fileLine
 			return null;
 		}
-		String url = fileLine.substring(urlBeginIndex + urlStartFlag.length(), urlEndIndex + URL_END_FLAG.length());
+		String url = fileLine.substring(urlBeginIndex + urlStartFlag.length(), urlEndIndex);
 		return url.replaceAll("//", "/");
 	}
 

@@ -31,7 +31,7 @@ public class StartJob {
 	private LogStatisticsService logStatisticService;
 
 	private final String LOG_TABLE_PRE = "http_log_";
-	private String dateStr = "2016-10-28";
+	private String dateStr = "2016-10-31";
 	 private String logFilePath = "/Users/bql/http/" + dateStr + '/';
 //	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
@@ -53,7 +53,7 @@ public class StartJob {
 			// 创建日志表
 			logDao.createLogtable(tableName);
 			originalLogDao.createLogtable(orgTableName);
-			// 处理文件1
+			// 处理日志文件
 			dealLogFile(logFilePath + fileName, tableName, orgTableName);
 		}
 //		logTableSet.add("http_log_cm_client2016_10_28");
