@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.xssf.usermodel.XSSFRow;
@@ -28,6 +31,21 @@ public class LogStatisticsService {
 
 	private static final Logger logger = Logger.getLogger(LogStatisticsService.class);
 
+	private static Set<String> cm_special_url = new HashSet<String>();
+	static {
+		cm_special_url.add("/schools");
+		cm_special_url.add("/teachers/");
+		cm_special_url.add("/paper");
+		cm_special_url.add("/cc");
+		cm_special_url.add("/ct");
+		cm_special_url.add("/sc");
+		cm_special_url.add("/st");
+		cm_special_url.add("/exam");
+	}
+	private String CM_PRE = "cm";
+			
+	
+	
 	@Autowired
 	private LogDaoImpl logDao;
 
@@ -38,9 +56,46 @@ public class LogStatisticsService {
 
 
 	public void addData2Excel(XSSFWorkbook workBook, String tableName, String projectName) throws IOException {
-		XSSFSheet sheet = workBook.createSheet(projectName);
-		addExcelHeader(sheet);
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
+		
+		if(!tableName.contains(CM_PRE)){//cm-client 需特殊处理。
+			add2Sheet(workBook, projectName, logInfos);
+		}
+			
+		Map<String, List<UrlRequestInfo>> reClassSheet = reClassSheet(logInfos);
+		for (Entry<String, List<UrlRequestInfo>> urlRequestInfo : reClassSheet.entrySet()) {
+			add2Sheet(workBook, urlRequestInfo.getKey(), urlRequestInfo.getValue());
+		}
+		add2Sheet(workBook, projectName, logInfos);		
+	}
+	
+	private Map<String, List<UrlRequestInfo>> reClassSheet(List<UrlRequestInfo> logInfos) {
+		//key 为 excel sheet;
+		Map<String, List<UrlRequestInfo>> urlRequests = new HashMap<>(); 
+		for (int i = 0; i < logInfos.size(); i++) {
+			UrlRequestInfo urlRequestInfo = logInfos.get(i);
+			if (urlRequestInfo.getUrl().length() <= 1) {
+				continue;
+			}
+			int secondDecIndex = urlRequestInfo.getUrl().indexOf("/", 1);
+			String urlPre = urlRequestInfo.getUrl().substring(0, secondDecIndex);
+			if (!cm_special_url.contains(urlPre)) {
+				continue;
+			}
+			String excelsheetName = CM_PRE +"-"+ urlPre.substring(1);
+			List<UrlRequestInfo> tempUrlList = urlRequests.get(excelsheetName);
+			if (tempUrlList == null) {
+				tempUrlList = new ArrayList<>();
+				urlRequests.put(excelsheetName, tempUrlList);
+			}
+			tempUrlList.add(urlRequestInfo);
+			logInfos.remove(urlRequestInfo);
+		}
+		return urlRequests;
+	}
+	private void add2Sheet(XSSFWorkbook workBook, String sheetName, List<UrlRequestInfo> logInfos) {
+		XSSFSheet sheet = workBook.createSheet(sheetName);
+		addExcelHeader(sheet);
 		add2Excel(logInfos, sheet);
 	}
 
