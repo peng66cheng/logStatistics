@@ -31,32 +31,35 @@ public class StartJob {
 	private LogStatisticsService logStatisticService;
 
 	private final String LOG_TABLE_PRE = "http_log_";
-	private String dateStr = "2016-10-31";
+	private String dateStr = "2016-11-01";
 	 private String logFilePath = "/Users/bql/http/" + dateStr + '/';
 //	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
 	public void start() throws IOException {
-		File[] logFileNames = FileUtils.listSubFile(logFilePath);
 		Set<String> logTableSet = new HashSet<>();
-		for (File logFile : logFileNames) {
-			if(!logFile.getName().endsWith(".log")){
-				continue;
-			}
-			String fileName = logFile.getName();
-			String projectName = getProjectName(fileName);
-			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
-			logTableSet.add(tableName);
-			
-			String orgTableName = tableName + "_org";
-			// 创建日志表
-			logDao.createLogtable(tableName);
-			originalLogDao.createLogtable(orgTableName);
-			// 处理日志文件
-			dealLogFile(logFilePath + fileName, tableName, orgTableName);
-		}
-//		logTableSet.add("http_log_cm_client2016_10_28");
+//		File[] logFileNames = FileUtils.listSubFile(logFilePath);
+//		for (File logFile : logFileNames) {
+//			if(!logFile.getName().endsWith(".log")){
+//				continue;
+//			}
+//			String fileName = logFile.getName();
+//			String projectName = getProjectName(fileName);
+//			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
+//			logTableSet.add(tableName);
+//			
+//			String orgTableName = tableName + "_org";
+//			// 创建日志表
+//			logDao.createLogtable(tableName);
+//			originalLogDao.createLogtable(orgTableName);
+//			// 处理日志文件
+//			dealLogFile(logFilePath + fileName, tableName, orgTableName);
+//		}
+		logTableSet.add("http_log_teacher_client2016_11_01");
+		logTableSet.add("http_log_user_client2016_11_01");
+		logTableSet.add("http_log_operator_client2016_11_01");
+		
 		report(logTableSet);
 	}
 
