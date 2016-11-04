@@ -34,8 +34,9 @@ public class LogStatisticsService {
 	private static Set<String> cm_special_url = new HashSet<String>();
 	static {
 		cm_special_url.add("/schools");
-		cm_special_url.add("/teachers/");
+		cm_special_url.add("/teachers");
 		cm_special_url.add("/paper");
+		cm_special_url.add("/papers");
 		cm_special_url.add("/cc");
 		cm_special_url.add("/ct");
 		cm_special_url.add("/sc");
