@@ -33,7 +33,6 @@ public class StartJob {
 
 	private final String LOG_TABLE_PRE = "http_log_";
 	private String logFilePath = "/Users/bql/http/$date/";
-//	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
@@ -69,13 +68,13 @@ public class StartJob {
 //		logTableSet.add("http_log_user_client2016_11_02");
 //		logTableSet.add("http_log_operator_client2016_11_02");
 //		
-		report(logTableSet, dateStr);
+		report(logTableSet, logFilePath, dateStr);
 	}
 
-	private void report(Set<String> logTableSet, String dateStr) throws IOException {
+	private void report(Set<String> logTableSet, String logFilePath, String dateStr) throws IOException {
 		for (String logTableName : logTableSet) {
 			String projectName = logTableName.substring(LOG_TABLE_PRE.length(), logTableName.indexOf("20"));
-			String statisticFileName = logFilePath + "httpStatistics/" + dateStr + ".xlsx";
+			String statisticFileName = logFilePath + dateStr + ".xlsx";
 			XSSFWorkbook workBook = logStatisticService.getWorkBook(statisticFileName);
 			
 			logStatisticService.addData2Excel(workBook, logTableName, projectName);
