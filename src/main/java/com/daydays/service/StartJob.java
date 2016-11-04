@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.daydays.DateUtil;
 import com.daydays.dao.LogDaoImpl;
 import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
@@ -31,13 +32,18 @@ public class StartJob {
 	private LogStatisticsService logStatisticService;
 
 	private final String LOG_TABLE_PRE = "http_log_";
-	private String dateStr = "2016-11-03";
-	 private String logFilePath = "/Users/bql/http/" + dateStr + '/';
+	private String logFilePath = "/Users/bql/http/$date/";
 //	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
 	public void start() throws IOException {
+		//设置 处理日志日期
+		String dateStr = "2016-11-03";
+		dateStr = DateUtil.getYesterday();
+		logFilePath = logFilePath.replace("$date", dateStr);
+		//设置 处理日志日期 结束
+		
 		Set<String> logTableSet = new HashSet<>();
 		File[] logFileNames = FileUtils.listSubFile(logFilePath);
 		for (File logFile : logFileNames) {
@@ -63,10 +69,10 @@ public class StartJob {
 //		logTableSet.add("http_log_user_client2016_11_02");
 //		logTableSet.add("http_log_operator_client2016_11_02");
 //		
-		report(logTableSet);
+		report(logTableSet, dateStr);
 	}
 
-	private void report(Set<String> logTableSet) throws IOException {
+	private void report(Set<String> logTableSet, String dateStr) throws IOException {
 		for (String logTableName : logTableSet) {
 			String projectName = logTableName.substring(LOG_TABLE_PRE.length(), logTableName.indexOf("20"));
 			String statisticFileName = logFilePath + "httpStatistics/" + dateStr + ".xlsx";
