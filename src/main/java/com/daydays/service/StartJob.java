@@ -31,7 +31,7 @@ public class StartJob {
 	private LogStatisticsService logStatisticService;
 
 	private final String LOG_TABLE_PRE = "http_log_";
-	private String dateStr = "2016-11-01";
+	private String dateStr = "2016-11-03";
 	 private String logFilePath = "/Users/bql/http/" + dateStr + '/';
 //	private String logFilePath = "/home/dpc/文档/http/" + dateStr + '/';
 
@@ -39,27 +39,30 @@ public class StartJob {
 
 	public void start() throws IOException {
 		Set<String> logTableSet = new HashSet<>();
-//		File[] logFileNames = FileUtils.listSubFile(logFilePath);
-//		for (File logFile : logFileNames) {
-//			if(!logFile.getName().endsWith(".log")){
-//				continue;
-//			}
-//			String fileName = logFile.getName();
-//			String projectName = getProjectName(fileName);
-//			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
-//			logTableSet.add(tableName);
-//			
-//			String orgTableName = tableName + "_org";
-//			// 创建日志表
-//			logDao.createLogtable(tableName);
-//			originalLogDao.createLogtable(orgTableName);
-//			// 处理日志文件
-//			dealLogFile(logFilePath + fileName, tableName, orgTableName);
-//		}
-		logTableSet.add("http_log_teacher_client2016_11_01");
-		logTableSet.add("http_log_user_client2016_11_01");
-		logTableSet.add("http_log_operator_client2016_11_01");
+		File[] logFileNames = FileUtils.listSubFile(logFilePath);
+		for (File logFile : logFileNames) {
+			if(!logFile.getName().endsWith(".log")){
+				continue;
+			}
+			String fileName = logFile.getName();
+			String projectName = getProjectName(fileName);
+			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
+			logTableSet.add(tableName);
+			
+			String orgTableName = tableName + "_org";
+			// 创建日志表
+			logDao.createLogtable(tableName);
+			originalLogDao.createLogtable(orgTableName);
+			// 处理日志文件
+			dealLogFile(logFilePath + fileName, tableName, orgTableName);
+		}
 		
+		
+//		logTableSet.add("http_log_cm_client2016_11_02");
+//		logTableSet.add("http_log_teacher_client2016_11_02");
+//		logTableSet.add("http_log_user_client2016_11_02");
+//		logTableSet.add("http_log_operator_client2016_11_02");
+//		
 		report(logTableSet);
 	}
 
