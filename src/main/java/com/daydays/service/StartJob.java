@@ -38,7 +38,7 @@ public class StartJob {
 
 	public void start() throws IOException {
 		//设置 处理日志日期
-		String dateStr = "2016-11-03";
+		String dateStr = "2016-11-06";
 		dateStr = DateUtil.getYesterday();
 		logFilePath = logFilePath.replace("$date", dateStr);
 		//设置 处理日志日期 结束

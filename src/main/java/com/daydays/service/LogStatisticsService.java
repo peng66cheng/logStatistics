@@ -99,6 +99,7 @@ public class LogStatisticsService {
 	private void add2Sheet(XSSFWorkbook workBook, String sheetName, List<UrlRequestInfo> logInfos) {
 		XSSFSheet sheet = workBook.createSheet(sheetName);
 		addExcelHeader(sheet);
+		Collections.sort(logInfos);//先排序，在存excel
 		add2Excel(logInfos, sheet);
 	}
 
@@ -187,7 +188,7 @@ public class LogStatisticsService {
 
 			urlReqs.add(urlReqInfo);
 		}
-		Collections.sort(urlReqs);
+
 		return urlReqs;
 	}
 
