@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.daydays.DateUtil;
+import com.daydays.utils.DateUtil;
 import com.daydays.dao.LogDaoImpl;
 import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
