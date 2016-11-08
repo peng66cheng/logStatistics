@@ -82,5 +82,8 @@ public class LogDaoImpl {
 			}
 		});
 	}
+	public List<UrlNum> queryUrlRequestNum( String projectName) {
+		return this.queryUrlRequestNum(null, projectName);
+	}
 
 }

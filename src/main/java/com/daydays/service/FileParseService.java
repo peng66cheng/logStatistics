@@ -39,27 +39,31 @@ public class FileParseService {
 
 	private static final Logger logger = Logger.getLogger(FileParseService.class);
 
-	public List<LogItem> parseFile(String fileName, final String orgLogTableName) throws IOException {
+	public List<List<LogItem>> parseFile(String fileName, final String orgLogTableName) throws IOException {
 
 		FileUtils.readLineFromFile(fileName, new IExecutable() {
 			@Override
 			public <String> void execute(Collection<String> orgLogs) {
+				logger.info("日志文件入库：size=" + orgLogs.size());
 				originalLogDao.addOriginalLog((Collection<java.lang.String>) orgLogs, orgLogTableName);
 			}
 		});
 
 		int logNum = originalLogDao.queryOriginalLogSize(orgLogTableName);
 		logger.info("fileName=" + fileName + ",logNum=" + logNum);
-		List<LogItem> logItems = new ArrayList<>();
+		List<List<LogItem>>  logItemsList = new ArrayList<>();
 		int pageSize = 999;
 		for (int startIndex = 0; startIndex < logNum;startIndex += pageSize) {
 			List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
 			if (CollectionUtils.isEmpty(orgLogs)) {
 				break;
 			}
-			logItems.addAll(getLogItems(orgLogs));
+			List<LogItem>  tempLogItems = getLogItems(orgLogs);
+			
+			logger.info("获取 日志项：tempLogItems.size=" + tempLogItems.size());
+			logItemsList.add(tempLogItems);
 		}
-		return logItems;
+		return logItemsList;
 	}
 
 	private List<LogItem> getLogItems(List<String> fileLines) {

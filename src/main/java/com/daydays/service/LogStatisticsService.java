@@ -53,23 +53,28 @@ public class LogStatisticsService {
 	// }
 	//
 
-	public void addData2Excel(String statisticFileName, XSSFWorkbook workBook, String tableName, String projectName) throws IOException {
+	public void addData2Excel(String statisticFileName, XSSFWorkbook workBook, String tableName, String projectName)
+			throws IOException {
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
 
 		if (!tableName.contains(CM_PRE)) {// cm-client 需特殊处理。
-			add2Sheet(workBook, projectName, logInfos);
+			add2Sheet(statisticFileName, workBook, projectName, logInfos);
 			return;
 		}
 
 		Map<String, List<UrlRequestInfo>> reClassSheet = reClassSheet(logInfos);
 		for (Entry<String, List<UrlRequestInfo>> urlRequestInfo : reClassSheet.entrySet()) {
-			logInfos.removeAll(urlRequestInfo.getValue());//移除
-			add2Sheet(workBook, urlRequestInfo.getKey(), urlRequestInfo.getValue());
+			logInfos.removeAll(urlRequestInfo.getValue());// 移除
+			add2Sheet(statisticFileName, workBook, urlRequestInfo.getKey(), urlRequestInfo.getValue());
 		}
-		add2Sheet(workBook, projectName, logInfos);
-		this.writeFile2Disk(workBook, statisticFileName);
+		add2Sheet(statisticFileName, workBook, projectName, logInfos);
 	}
 
+	/**
+	 * 对于特殊url，重新分配 工作薄
+	 * @param logInfos
+	 * @return
+	 */
 	private Map<String, List<UrlRequestInfo>> reClassSheet(List<UrlRequestInfo> logInfos) {
 		// key 为 excel sheet;
 		Map<String, List<UrlRequestInfo>> urlRequests = new HashMap<>();
@@ -97,11 +102,16 @@ public class LogStatisticsService {
 		return urlRequests;
 	}
 
-	private void add2Sheet(XSSFWorkbook workBook, String sheetName, List<UrlRequestInfo> logInfos) {
+	private void add2Sheet(String statisticFileName, XSSFWorkbook workBook, String sheetName, List<UrlRequestInfo> logInfos) throws IOException {
+		logger.info("写入工作薄，sheetName="+sheetName);
 		XSSFSheet sheet = workBook.createSheet(sheetName);
 		addExcelHeader(sheet);
-		Collections.sort(logInfos);//先排序，在存excel
+		logger.info("开始排序");
+		Collections.sort(logInfos);// 先排序，在存excel
+		logger.info("排序结束");
 		add2Excel(logInfos, sheet);
+		this.writeFile2Disk(workBook, statisticFileName);
+		logger.info("写入工作薄，sheetName="+sheetName+"结束");
 	}
 
 	public void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException {
@@ -111,17 +121,32 @@ public class LogStatisticsService {
 		fos.close();
 	}
 
+	/**
+	 * 创建excel文件
+	 * @param statisticFileName
+	 * @return
+	 * @throws IOException
+	 */
 	public File getExcelFile(String statisticFileName) throws IOException {
+		logger.info("创建文件:" + statisticFileName);
 		File file = new File(statisticFileName);
 		if (!new File(statisticFileName).exists()) {
 			// 需要先创建目录
 			FileUtils.checkDir(statisticFileName.substring(0, statisticFileName.lastIndexOf("/")), true);
 			FileUtils.createFile(statisticFileName);
-			XSSFWorkbook workBook = new XSSFWorkbook();
-			FileOutputStream fos = new FileOutputStream(file);
-			workBook.write(fos);
-			fos.flush();
-			fos.close();
+			FileOutputStream fos = null;
+			try {
+				XSSFWorkbook workBook = new XSSFWorkbook();
+				fos = new FileOutputStream(file);
+				workBook.write(fos);
+				fos.flush();
+			} catch (Exception t) {
+				throw t;
+			} finally {
+				if (fos != null) {
+					fos.close();
+				}
+			}
 		}
 		return file;
 	}
@@ -133,11 +158,11 @@ public class LogStatisticsService {
 		return workBook;
 	}
 
-	public XSSFSheet getXssfSheet(String statisticFileName, String projectName) throws IOException {
-		XSSFWorkbook workBook = getWorkBook(statisticFileName);
-		return workBook.createSheet(projectName);
-
-	}
+//	public XSSFSheet getXssfSheet(String statisticFileName, String projectName) throws IOException {
+//		XSSFWorkbook workBook = getWorkBook(statisticFileName);
+//		return workBook.createSheet(projectName);
+//
+//	}
 
 	public int add2Excel(List<UrlRequestInfo> urlInfos, XSSFSheet xssSheet) {
 		int i = 0;
@@ -167,14 +192,20 @@ public class LogStatisticsService {
 
 		List<UrlRequestInfo> urlReqs = new ArrayList<>();
 
-		List<UrlNum> urlsNum = logDao.queryUrlRequestNum(null, tableName);
-
+		logger.info("查询url数，开始");
+		List<UrlNum> urlsNum = logDao.queryUrlRequestNum(tableName);
+		logger.info("查询url数，结束");
+		
+		logger.info("查询warn url数，开始");
 		List<UrlNum> warnUrlsNum = logDao.queryUrlRequestNum(LogLevel.WARN.getId(), tableName);
 		Map<String, Integer> warnUrlMap = UrlNum2Map(warnUrlsNum);
-
+		logger.info("查询warn url数，结束");
+		
+		logger.info("查询error url数，开始");
 		List<UrlNum> errorUrlsNum = logDao.queryUrlRequestNum(LogLevel.ERROR.getId(), tableName);
 		Map<String, Integer> errorUrlMap = UrlNum2Map(errorUrlsNum);
-
+		logger.info("查询error url数，结束");
+		
 		for (UrlNum urlNum : urlsNum) {
 			UrlRequestInfo urlReqInfo = new UrlRequestInfo();
 			urlReqInfo.setUrl(urlNum.getUrl());
@@ -189,7 +220,7 @@ public class LogStatisticsService {
 
 			urlReqs.add(urlReqInfo);
 		}
-
+		logger.info("url 统计结束");
 		return urlReqs;
 	}
 

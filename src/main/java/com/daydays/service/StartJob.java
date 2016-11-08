@@ -2,7 +2,6 @@ package com.daydays.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,10 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.daydays.utils.DateUtil;
 import com.daydays.dao.LogDaoImpl;
 import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
+import com.daydays.utils.DateUtil;
 import com.daydays.utils.FileUtils;
 
 @Service
@@ -37,47 +36,51 @@ public class StartJob {
 	private static final Logger logger = Logger.getLogger(StartJob.class);
 
 	public void start() throws IOException {
-		//设置 处理日志日期
+		// 设置 处理日志日期
 		String dateStr = DateUtil.getYesterday();
-//		String dateStr = "2016-11-06";
+		// String dateStr = "2016-11-06";
 		logFilePath = logFilePath.replace("$date", dateStr);
-		//设置 处理日志日期 结束
-		
+		// 设置 处理日志日期 结束
+		logger.info("日志文件路径为：" + logFilePath);
 		Set<String> logTableSet = new HashSet<>();
 		File[] logFileNames = FileUtils.listSubFile(logFilePath);
 		for (File logFile : logFileNames) {
-			if(!logFile.getName().endsWith(".log")){
+			if (!logFile.getName().endsWith(".log")) {
 				continue;
 			}
 			String fileName = logFile.getName();
+			logger.info("处理日志文件：" + fileName);
+
 			String projectName = getProjectName(fileName);
 			String tableName = LOG_TABLE_PRE + projectName + dateStr.replace('-', '_');
 			logTableSet.add(tableName);
-			
+
 			String orgTableName = tableName + "_org";
 			// 创建日志表
 			logDao.createLogtable(tableName);
 			originalLogDao.createLogtable(orgTableName);
+			logger.info("创建日志表：" + tableName + "," + orgTableName);
+
 			// 处理日志文件
 			dealLogFile(logFilePath + fileName, tableName, orgTableName);
 		}
-		
-		
-//		logTableSet.add("http_log_cm_client2016_11_02");
-//		logTableSet.add("http_log_teacher_client2016_11_02");
-//		logTableSet.add("http_log_user_client2016_11_02");
-//		logTableSet.add("http_log_operator_client2016_11_02");
-//		
+
+		// logTableSet.add("http_log_cm_client2016_11_02");
+		// logTableSet.add("http_log_teacher_client2016_11_02");
+		// logTableSet.add("http_log_user_client2016_11_02");
+		// logTableSet.add("http_log_operator_client2016_11_02");
+		//
 		report(logTableSet, logFilePath, dateStr);
 	}
 
 	private void report(Set<String> logTableSet, String logFilePath, String dateStr) throws IOException {
 		for (String logTableName : logTableSet) {
+			logger.info("统报告计：logTableName=" + logTableName);
 			String projectName = logTableName.substring(LOG_TABLE_PRE.length(), logTableName.indexOf("20"));
 			String statisticFileName = logFilePath + dateStr + ".xlsx";
 			XSSFWorkbook workBook = logStatisticService.getWorkBook(statisticFileName);
-			
 			logStatisticService.addData2Excel(statisticFileName, workBook, logTableName, projectName);
+			logger.info("统报告计：logTableName=" + logTableName + "结束");
 		}
 	}
 
@@ -87,22 +90,18 @@ public class StartJob {
 			return;
 		}
 		for (List<LogItem> logItems : result) {
+			logger.warn("转化结果入库：size=" + logItems.size());
 			add2DB(logItems, tableName);
 		}
 	}
 
 	private List<List<LogItem>> getLogItems(String fileFullName, String orgLogTable) throws IOException {
-		List<List<LogItem>> result = new ArrayList<>();
-		List<LogItem> logItems = fileParse.parseFile(fileFullName, orgLogTable);
-		if (CollectionUtils.isEmpty(logItems)) {
+		List<List<LogItem>> logItemsList = fileParse.parseFile(fileFullName, orgLogTable);
+		if (CollectionUtils.isEmpty(logItemsList)) {
 			logger.warn("has.no.info.fileName=" + fileFullName);
 			return null;
 		}
-		int size = logItems.size();
-		for (int i = 0; i < size; i += 1000) {
-			result.add(logItems.subList(i, size < i + 1000 ? size : i + 1000));
-		}
-		return result;
+		return logItemsList;
 	}
 
 	private String getProjectName(String fileName) {

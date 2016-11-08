@@ -199,12 +199,13 @@ public final class FileUtils {
 			if (result.size() > 0) {
 				executable.execute(result);
 			}
-			in.close();
 		} catch (IOException e) {
+			log.error("", e);
+			throw e;
+		} finally {
 			if (in != null) {
 				in.close();
 			}
-			throw e;
 		}
 		return result;
 
