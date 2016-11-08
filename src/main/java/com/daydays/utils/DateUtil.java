@@ -1,4 +1,4 @@
-package com.daydays;
+package com.daydays.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -18,6 +18,17 @@ public class DateUtil {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DAY_OF_MONTH, -1);
 		return sdfYMD.get().format(cal.getTime());
+	}
+	
+	/**
+	 * 获取第二天 凌晨2点的时间
+	 * @return
+	 */
+	public long getNext2OClock(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 2);
+		cal.add(Calendar.DAY_OF_MONTH, 1);
+		return cal.getTime().getTime();
 	}
 
 	public static void main(String[] args) {
