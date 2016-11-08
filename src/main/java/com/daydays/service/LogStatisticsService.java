@@ -53,7 +53,7 @@ public class LogStatisticsService {
 	// }
 	//
 
-	public void addData2Excel(XSSFWorkbook workBook, String tableName, String projectName) throws IOException {
+	public void addData2Excel(String statisticFileName, XSSFWorkbook workBook, String tableName, String projectName) throws IOException {
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
 
 		if (!tableName.contains(CM_PRE)) {// cm-client 需特殊处理。
@@ -67,6 +67,7 @@ public class LogStatisticsService {
 			add2Sheet(workBook, urlRequestInfo.getKey(), urlRequestInfo.getValue());
 		}
 		add2Sheet(workBook, projectName, logInfos);
+		this.writeFile2Disk(workBook, statisticFileName);
 	}
 
 	private Map<String, List<UrlRequestInfo>> reClassSheet(List<UrlRequestInfo> logInfos) {

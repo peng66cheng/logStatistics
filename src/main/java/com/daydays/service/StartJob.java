@@ -38,8 +38,8 @@ public class StartJob {
 
 	public void start() throws IOException {
 		//设置 处理日志日期
-		String dateStr = "2016-11-06";
-		dateStr = DateUtil.getYesterday();
+		String dateStr = DateUtil.getYesterday();
+//		String dateStr = "2016-11-06";
 		logFilePath = logFilePath.replace("$date", dateStr);
 		//设置 处理日志日期 结束
 		
@@ -77,8 +77,7 @@ public class StartJob {
 			String statisticFileName = logFilePath + dateStr + ".xlsx";
 			XSSFWorkbook workBook = logStatisticService.getWorkBook(statisticFileName);
 			
-			logStatisticService.addData2Excel(workBook, logTableName, projectName);
-			logStatisticService.writeFile2Disk(workBook, statisticFileName);
+			logStatisticService.addData2Excel(statisticFileName, workBook, logTableName, projectName);
 		}
 	}
 
