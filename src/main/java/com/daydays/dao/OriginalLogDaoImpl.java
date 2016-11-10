@@ -28,7 +28,7 @@ public class OriginalLogDaoImpl {
 
 	private String orgLogSizeSql = "SELECT \n    COUNT(1)\nFROM\n    $tablename";
 
-	private String orgLogQuerySql = "SELECT \n    log_info\nFROM\n    $tablename\nLIMIT $starIndex , $limitNum";
+	private String orgLogQuerySql = "SELECT \n    log_info\nFROM\n    $tablename\n where id > $startIndex and id <= $endIndex";
 
 	public void createLogtable(String tableName) {
 		try {
@@ -63,8 +63,8 @@ public class OriginalLogDaoImpl {
 
 	public List<String> queryOriginalLog(String orgLogTableName, int pageNum, int pageSize) {
 		String tempUrl = orgLogQuerySql.replace("$tablename", orgLogTableName)
-				.replace("$starIndex", String.valueOf(pageNum)).replace("$limitNum", String.valueOf(pageSize));
-
+				.replace("$startIndex", String.valueOf(pageNum)).replace("$endIndex", String.valueOf(pageNum + pageSize));
+		
 		return this.jdbcTemplate.query(tempUrl, new RowMapper<String>() {
 			@Override
 			public String mapRow(ResultSet rs, int rowNum) throws SQLException {

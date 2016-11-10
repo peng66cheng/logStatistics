@@ -71,7 +71,7 @@ public class FileParseService {
 		int pageSize = 1000;
 		int sum = 0;
 		int itemSum = 0;
-		for (int startIndex = 0; startIndex < logNum; startIndex += pageSize) {
+		for (int startIndex = 1; startIndex < logNum; startIndex += pageSize) {
 			final List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
 			logger.info("获取原数据：sum＝" + (sum += orgLogs.size()));
 			if (CollectionUtils.isEmpty(orgLogs)) {
