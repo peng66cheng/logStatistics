@@ -17,12 +17,12 @@
 		</layout>
 	</appender>
 
-
+	<!-- 
 	<logger name="com.daydays">
 		<level value="DEBUG" />
 		<appender-ref ref="DEFAULT-APPENDER" />
 	</logger>
-
+	-->
 	<!-- TRACE < DEBUG < INFO < WARN < ERROR < FATAL -->
 	<root>
 		<level value="debug" />       <!-- print warn、error -->

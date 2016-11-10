@@ -53,7 +53,6 @@ public class OriginalLogDaoImpl {
 		}
 		sql = sql.substring(0, sql.length() - 1);
 		int result = this.jdbcTemplate.update(sql);
-		this.jdbcTemplate.execute("commit;");
 		return result;
 	}
 

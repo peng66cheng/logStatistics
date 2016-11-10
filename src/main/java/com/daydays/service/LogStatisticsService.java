@@ -53,21 +53,21 @@ public class LogStatisticsService {
 	// }
 	//
 
-	public void addData2Excel(String statisticFileName, XSSFWorkbook workBook, String tableName, String projectName)
+	public void addData2Excel(String statisticFileName, String tableName, String projectName)
 			throws IOException {
 		List<UrlRequestInfo> logInfos = this.getRequestInfos(tableName);
 
 		if (!tableName.contains(CM_PRE)) {// cm-client 需特殊处理。
-			add2Sheet(statisticFileName, workBook, projectName, logInfos);
+			add2Sheet(statisticFileName, projectName, logInfos);
 			return;
 		}
 
 		Map<String, List<UrlRequestInfo>> reClassSheet = reClassSheet(logInfos);
 		for (Entry<String, List<UrlRequestInfo>> urlRequestInfo : reClassSheet.entrySet()) {
 			logInfos.removeAll(urlRequestInfo.getValue());// 移除
-			add2Sheet(statisticFileName, workBook, urlRequestInfo.getKey(), urlRequestInfo.getValue());
+			add2Sheet(statisticFileName, urlRequestInfo.getKey(), urlRequestInfo.getValue());
 		}
-		add2Sheet(statisticFileName, workBook, projectName, logInfos);
+		add2Sheet(statisticFileName, projectName, logInfos);
 	}
 
 	/**
@@ -102,7 +102,8 @@ public class LogStatisticsService {
 		return urlRequests;
 	}
 
-	private void add2Sheet(String statisticFileName, XSSFWorkbook workBook, String sheetName, List<UrlRequestInfo> logInfos) throws IOException {
+	private void add2Sheet(String statisticFileName, String sheetName, List<UrlRequestInfo> logInfos) throws IOException {
+		XSSFWorkbook workBook = this.getWorkBook(statisticFileName);
 		logger.info("写入工作薄，sheetName="+sheetName);
 		XSSFSheet sheet = workBook.createSheet(sheetName);
 		addExcelHeader(sheet);

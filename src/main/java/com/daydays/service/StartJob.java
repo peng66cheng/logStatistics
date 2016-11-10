@@ -62,14 +62,14 @@ public class StartJob {
 			logger.info("创建日志表：" + tableName + "," + orgTableName);
 
 			// 处理日志文件
-			dealLogFile(logFilePath + fileName, tableName, orgTableName);
+			fileParse.parseFile(logFilePath + fileName, orgTableName, tableName);
 		}
 
-		// logTableSet.add("http_log_cm_client2016_11_02");
-		// logTableSet.add("http_log_teacher_client2016_11_02");
-		// logTableSet.add("http_log_user_client2016_11_02");
-		// logTableSet.add("http_log_operator_client2016_11_02");
-		//
+		// logTableSet.add("http_log_cm_client2016_11_07");
+		// logTableSet.add("http_log_teacher_client2016_11_07");
+		// logTableSet.add("http_log_user_client2016_11_07");
+		// logTableSet.add("http_log_operator_client2016_11_07");
+
 		report(logTableSet, logFilePath, dateStr);
 	}
 
@@ -78,41 +78,14 @@ public class StartJob {
 			logger.info("统报告计：logTableName=" + logTableName);
 			String projectName = logTableName.substring(LOG_TABLE_PRE.length(), logTableName.indexOf("20"));
 			String statisticFileName = logFilePath + dateStr + ".xlsx";
-			XSSFWorkbook workBook = logStatisticService.getWorkBook(statisticFileName);
-			logStatisticService.addData2Excel(statisticFileName, workBook, logTableName, projectName);
+			logStatisticService.addData2Excel(statisticFileName, logTableName, projectName);
 			logger.info("统报告计：logTableName=" + logTableName + "结束");
 		}
-	}
-
-	private void dealLogFile(String fileFullName, String tableName, String orgLogTable) throws IOException {
-		List<List<LogItem>> result = getLogItems(fileFullName, orgLogTable);
-		if (CollectionUtils.isEmpty(result)) {
-			return;
-		}
-		for (List<LogItem> logItems : result) {
-			logger.warn("转化结果入库：size=" + logItems.size());
-			add2DB(logItems, tableName);
-		}
-	}
-
-	private List<List<LogItem>> getLogItems(String fileFullName, String orgLogTable) throws IOException {
-		List<List<LogItem>> logItemsList = fileParse.parseFile(fileFullName, orgLogTable);
-		if (CollectionUtils.isEmpty(logItemsList)) {
-			logger.warn("has.no.info.fileName=" + fileFullName);
-			return null;
-		}
-		return logItemsList;
 	}
 
 	private String getProjectName(String fileName) {
 		int projectNameIndex = fileName.lastIndexOf("_http-monitor");
 		return fileName.substring(0, projectNameIndex);
-	}
-
-	private void add2DB(List<LogItem> logItems, String projectName) {
-		if (!CollectionUtils.isEmpty(logItems)) {
-			logDao.addLogItems(logItems, projectName);
-		}
 	}
 
 }

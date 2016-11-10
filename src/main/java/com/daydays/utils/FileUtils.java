@@ -191,7 +191,7 @@ public final class FileUtils {
 			String temp;
 			while ((temp = in.readLine()) != null) {
 				result.add(temp);
-				if (result.size() > 999) {
+				if (result.size() >= 1000) {
 					executable.execute(result);
 					result = new ArrayList<>();
 				}

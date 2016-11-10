@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.daydays.dao.LogDaoImpl;
 import com.daydays.dao.OriginalLogDaoImpl;
 import com.daydays.domain.LogItem;
 import com.daydays.utils.FileUtils;
@@ -37,33 +41,54 @@ public class FileParseService {
 	@Autowired
 	private OriginalLogDaoImpl originalLogDao;
 
+	@Autowired
+	private SchedulingTaskExecutor threadPool;
+	private Executor executor = Executors.newFixedThreadPool(8);
+
+	@Autowired
+	private LogDaoImpl logDao;
+
 	private static final Logger logger = Logger.getLogger(FileParseService.class);
 
-	public List<List<LogItem>> parseFile(String fileName, final String orgLogTableName) throws IOException {
+	public void parseFile(String fileName, final String orgLogTableName, final String tableName) throws IOException {
 
 		FileUtils.readLineFromFile(fileName, new IExecutable() {
 			@Override
-			public <String> void execute(Collection<String> orgLogs) {
+			public <String> void execute(final Collection<String> orgLogs) {
 				logger.info("日志文件入库：size=" + orgLogs.size());
 				originalLogDao.addOriginalLog((Collection<java.lang.String>) orgLogs, orgLogTableName);
+				// executor.execute(new Runnable() {
+				// @Override
+				// public void run() {
+				// }
+				// });
+
 			}
 		});
 
 		int logNum = originalLogDao.queryOriginalLogSize(orgLogTableName);
 		logger.info("fileName=" + fileName + ",logNum=" + logNum);
-		List<List<LogItem>>  logItemsList = new ArrayList<>();
-		int pageSize = 999;
-		for (int startIndex = 0; startIndex < logNum;startIndex += pageSize) {
-			List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
+		int pageSize = 1000;
+		int sum = 0;
+		int itemSum = 0;
+		for (int startIndex = 0; startIndex < logNum; startIndex += pageSize) {
+			final List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
+			logger.info("获取原数据：sum＝" + (sum += orgLogs.size()));
 			if (CollectionUtils.isEmpty(orgLogs)) {
+				logger.info("获取日志信息为空：startIndex＝" + startIndex + ", pageSize=" + pageSize);
 				break;
 			}
-			List<LogItem>  tempLogItems = getLogItems(orgLogs);
-			
-			logger.info("获取 日志项：tempLogItems.size=" + tempLogItems.size());
-			logItemsList.add(tempLogItems);
+			List<LogItem> items = getLogItems(orgLogs);
+			logger.info("获取日志项：itemSum＝" + (itemSum += items.size()));
+			logDao.addLogItems(items, tableName);
+			logger.info("日志项入库成功");
+			// executor.execute(new Runnable() {
+			// @Override
+			// public void run() {
+			// }
+			// });
 		}
-		return logItemsList;
+		logger.info("##########parseFile.end!");
 	}
 
 	private List<LogItem> getLogItems(List<String> fileLines) {
