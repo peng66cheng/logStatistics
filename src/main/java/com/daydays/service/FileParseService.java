@@ -2,14 +2,10 @@ package com.daydays.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.SchedulingTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -41,37 +37,48 @@ public class FileParseService {
 	@Autowired
 	private OriginalLogDaoImpl originalLogDao;
 
-	@Autowired
-	private SchedulingTaskExecutor threadPool;
-	private Executor executor = Executors.newFixedThreadPool(8);
+//	@Autowired
+//	private SchedulingTaskExecutor threadPool;
+//	private Executor executor = Executors.newFixedThreadPool(8);
 
 	@Autowired
 	private LogDaoImpl logDao;
 
 	private static final Logger logger = Logger.getLogger(FileParseService.class);
 
-	public void parseFile(String fileName, final String orgLogTableName, final String tableName) throws IOException {
-
+	public void recordOrgLog(String fileName,  final String tableName) throws IOException {
+		final String orgLogTableName = tableName + "_org";
+		originalLogDao.createLogtable(orgLogTableName);
 		FileUtils.readLineFromFile(fileName, new IExecutable() {
+
 			@Override
-			public <String> void execute(final Collection<String> orgLogs) {
+			public <T> void execute(List<T> orgLogs) {
 				logger.info("日志文件入库：size=" + orgLogs.size());
-				originalLogDao.addOriginalLog((Collection<java.lang.String>) orgLogs, orgLogTableName);
-				// executor.execute(new Runnable() {
-				// @Override
-				// public void run() {
-				// }
-				// });
+				originalLogDao.addOriginalLog(orgLogs, orgLogTableName);
+				logger.info("日志文件入库成功！");
+//				 executor.execute(new Runnable() {
+//				 @Override
+//				 public void run() {
+//					 
+//				 }
+//				 });
 
 			}
-		});
 
+		});
+		logger.info("##########recordOrgLog.end!	fileName＝" + fileName);
+	}
+
+	public void logItemsToDB(final String tableName) {
+		final String orgLogTableName = tableName + "_org";
+		logDao.createLogtable(tableName);
+		
 		int logNum = originalLogDao.queryOriginalLogSize(orgLogTableName);
-		logger.info("fileName=" + fileName + ",logNum=" + logNum);
-		int pageSize = 1000;
+		int pageSize = 1*1000;
 		int sum = 0;
 		int itemSum = 0;
 		for (int startIndex = 1; startIndex < logNum; startIndex += pageSize) {
+			logger.info("开始获取原数据：startIndex＝" + startIndex);
 			final List<String> orgLogs = originalLogDao.queryOriginalLog(orgLogTableName, startIndex, pageSize);
 			logger.info("获取原数据：sum＝" + (sum += orgLogs.size()));
 			if (CollectionUtils.isEmpty(orgLogs)) {
@@ -88,7 +95,6 @@ public class FileParseService {
 			// }
 			// });
 		}
-		logger.info("##########parseFile.end!");
 	}
 
 	private List<LogItem> getLogItems(List<String> fileLines) {

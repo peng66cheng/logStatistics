@@ -219,6 +219,12 @@
 			<artifactId>commons-dbcp</artifactId>
 			<version>1.4</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.jolbox</groupId>
+			<artifactId>bonecp</artifactId>
+			<version>0.7.1.RELEASE</version>
+		</dependency>
 		<dependency>
 			<groupId>net.sf.ezmorph</groupId>
 			<artifactId>ezmorph</artifactId>

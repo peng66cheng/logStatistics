@@ -116,10 +116,18 @@ public class LogStatisticsService {
 	}
 
 	public void writeFile2Disk(XSSFWorkbook workBook, String statisticFileName) throws IOException {
-		FileOutputStream fos = new FileOutputStream(statisticFileName);
-		workBook.write(fos);
-		fos.flush();
-		fos.close();
+		FileOutputStream fos = null;
+		try{
+			fos = new FileOutputStream(statisticFileName);
+			workBook.write(fos);
+			fos.flush();
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			if(fos!= null){
+				fos.close();
+			}
+		}
 	}
 
 	/**
@@ -129,9 +137,9 @@ public class LogStatisticsService {
 	 * @throws IOException
 	 */
 	public File getExcelFile(String statisticFileName) throws IOException {
-		logger.info("创建文件:" + statisticFileName);
 		File file = new File(statisticFileName);
 		if (!new File(statisticFileName).exists()) {
+			logger.info("创建文件:" + statisticFileName);
 			// 需要先创建目录
 			FileUtils.checkDir(statisticFileName.substring(0, statisticFileName.lastIndexOf("/")), true);
 			FileUtils.createFile(statisticFileName);

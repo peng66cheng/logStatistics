@@ -2,7 +2,6 @@ package com.daydays.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class OriginalLogDaoImpl {
 
 	private String orgLogSizeSql = "SELECT \n    COUNT(1)\nFROM\n    $tablename";
 
-	private String orgLogQuerySql = "SELECT \n    log_info\nFROM\n    $tablename\n where id > $startIndex and id <= $endIndex";
+	private String orgLogQuerySql = "SELECT \n    log_info\nFROM\n    $tablename\n where id >= $startIndex and id < $endIndex";
 
 	public void createLogtable(String tableName) {
 		try {
@@ -40,15 +39,15 @@ public class OriginalLogDaoImpl {
 		}
 	}
 
-	public int addOriginalLog(Collection<String> orgLogs, String tempTableName) {
+	public <T> int addOriginalLog(List<T> orgLogs, String tempTableName) {
 		if (CollectionUtils.isEmpty(orgLogs)) {
 			return 0;
 		}
 
 		String sql = "insert into " + tempTableName + "(log_info) values ";
-		Iterator<String> iterator = orgLogs.iterator();
+		Iterator<T> iterator = orgLogs.iterator();
 		while (iterator.hasNext()) {
-			String originalLog = iterator.next();
+			T originalLog = iterator.next();
 			sql += "('" + originalLog + "'),";
 		}
 		sql = sql.substring(0, sql.length() - 1);

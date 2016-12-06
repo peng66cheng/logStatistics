@@ -1,6 +1,6 @@
 package com.daydays.utils;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * 执行接口
@@ -9,5 +9,5 @@ import java.util.Collection;
  */
 public interface IExecutable {
 
-	<T> void execute(Collection<T> collectoins);
+	<T> void execute(List<T> collectoins);
 }
